@@ -1,58 +1,77 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Festivals
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Een kleine Laravel-applicatie voor het beheren van festivals, de artiesten die er optreden en de locaties waar ze plaatsvinden.
 
-## About Laravel
+- Een **festival** hoort bij één **locatie** en heeft meerdere **artiesten**.
+- Een **artiest** kan op meerdere festivals spelen.
+- Op een **locatie** kunnen meerdere festivals plaatsvinden.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+De front-end bestaat uit gewone Blade-views met één stylesheet in `public/css/app.css`. Node.js of een build-stap is niet nodig.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Vereisten
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Laravel Herd](https://herd.laravel.com). Herd levert PHP 8.3+ en Composer mee en serveert de site voor je.
+- [DBngin](https://dbngin.com) met een MySQL-service
 
-## Learning Laravel
+## Project opzetten voor development
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Het project staat in je Herd-map (standaard `~/Herd/lar2-startpunt-les-9`). Alle commando's hieronder draai je vanuit de hoofdmap van het project.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Installeer de PHP-dependencies**
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+   ```bash
+   composer install
+   ```
 
-## Agentic Development
+2. **Maak je environment-bestand en app-key aan**
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-```bash
-composer require laravel/boost --dev
+   Zet daarna `APP_URL` in `.env` op `http://lar2-startpunt-les-9.test`.
 
-php artisan boost:install
-```
+3. **Maak de database aan en vul deze met testdata**
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+   Het project gebruikt MySQL via DBngin. Start je MySQL-service in DBngin en draai:
 
-## Contributing
+   ```bash
+   php artisan migrate --seed
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   De database `lar2_startpunt_les_9` bestaat nog niet, dus Laravel vraagt of je deze wilt aanmaken. Kies `Yes`. Daarna worden de tabellen aangemaakt, een testgebruiker (`test@example.com` / `password`) en 5 festivals. Elk festival krijgt een eigen locatie en 3 artiesten.
 
-## Code of Conduct
+   `.env.example` gaat uit van de standaardinstellingen van DBngin: gebruiker `root` zonder wachtwoord op `127.0.0.1:3306`. Wijken jouw instellingen af, pas dan de `DB_`-waarden in je `.env` aan.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. **Start de app**
 
-## Security Vulnerabilities
+   Zorg dat Herd en de MySQL-service in DBngin allebei draaien, en open <http://lar2-startpunt-les-9.test>. De homepagina toont de lijst met festivals.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Handige commando's
 
-## License
+| Commando | Wat het doet |
+|---|---|
+| `php artisan migrate:fresh --seed` | Verwijdert alle tabellen, draait de migraties opnieuw en vult de database opnieuw. Gebruik dit om je lokale data te resetten. |
+| `php artisan db:seed --class=FestivalSeeder` | Voegt 5 extra festivals toe (met locaties en artiesten) zonder iets te verwijderen. |
+| `php artisan test` | Draait de Pest-tests. De tests gebruiken een aparte SQLite-database in het geheugen (zie `phpunit.xml`), dus je MySQL-data blijft onaangeroerd. |
+| `vendor/bin/pint` | Formatteert de PHP-code volgens de codestijl van het project. Draai dit voordat je commit. |
+| `php artisan route:list --except-vendor` | Toont de routes van de app. |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Projectstructuur
+
+| Pad | Inhoud |
+|---|---|
+| `app/Models` | De modellen `Festival`, `Artist` en `Location` met hun relaties |
+| `app/Http/Controllers` | Eén resource-controller per model (index, create, store, show, edit, update, destroy) |
+| `routes/web.php` | Resource-routes voor `/festivals`, `/artists` en `/locations` |
+| `resources/views/components/layout.blade.php` | De basislayout die elke pagina gebruikt (`<x-layout>`) |
+| `resources/views/{festivals,artists,locations}` | De CRUD-views. Elke map heeft een gedeelde `form.blade.php` die create en edit allebei gebruiken |
+| `public/css/app.css` | Alle styling |
+| `database/factories`, `database/seeders` | Factories en seeders voor testdata |
+| `tests/Feature` | Feature-tests per controller |
+
+## Opmerkingen
+
+- `composer run setup` komt uit de Laravel-starter en draait ook `npm install` en `npm run build`, wat dit project niet nodig heeft. Volg daarom de stappen hierboven.
+- Je kunt een locatie niet verwijderen zolang er nog festivals aan gekoppeld zijn. Verplaats of verwijder die festivals eerst.
